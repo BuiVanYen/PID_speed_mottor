@@ -8,9 +8,9 @@
 #define IN2 7
 
 //globals
-long prevT=0;
-int posPrev=0;
-volatile int pos_i=0;
+long prevT=0;// thời gian trước đó
+int posPrev=0;// vị trí trước đó
+volatile int pos_i=0;//vị tri hiện tại (volatile vì được thay đổi trong ngắt)
 
 
 void setup() {
@@ -24,8 +24,8 @@ void setup() {
 }
 
 void loop() {
-  int pwr=100/3.0*micros()/1.0e6;
-  int dir=1;
+  int pwr=100/3.0*micros()/1.0e6;// tăng dần tốc độ theo thời gian 
+  int dir=1;// chiều quay thuận
   setMotor(dir, pwr, PWM, IN1, IN2);
 
   //read the position in an atomic block
@@ -35,9 +35,9 @@ void loop() {
     pos=pos_i;
   }
   //compute velocity with method 1
-  long currT=micros();
-  float deltaT=((float)(currT-prevT))/1.0e6;
-  float velocity1 = (pos-posPrev)/deltaT;
+  long currT=micros();// thời gian hiện tại
+  float deltaT=((float)(currT-prevT))/1.0e6;//thời gian giữa 2 lần đọc
+  float velocity1 = (pos-posPrev)/deltaT;// vận tốc = (vị trí hiện tại - vị trí trước đó)/ deltaT
   prevT=currT;
   posPrev=pos;
 
@@ -60,12 +60,12 @@ void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
 }
 
 void readEncoder(){
-  int b = digitalRead(ENCB);
+  int b = digitalRead(ENCB);// đọc trạng thái encoder b
   int increment =0;
   if(b > 0){
-    increment = 1;
+    increment = 1;// thuận
   } else {
-    increment = -1;
+    increment = -1;// nghịch
   }
-  pos_i += increment;
+  pos_i += increment;// cập nhật vị trí
 }
