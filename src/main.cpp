@@ -19,6 +19,8 @@ float v1Prev=0;
 float v2Filt=0;//vận tốc lọc phương pháp 2
 float v2Prev=0;
 
+float eintegral = 0;// tích phân lỗi
+
 void setup() {
   Serial.begin(9600);
   pinMode(ENCA, INPUT);
@@ -60,8 +62,10 @@ void loop() {
   float vt=100*(sin(currT/1e6)>0);
   //compute the control signal u
   float kp=1;
+  float ki=1;
   float e=vt-v1Filt;
-  float u=kp*e;
+  eintegral=eintegral+e*deltaT;
+  float u=kp*e+ki*eintegral;
 
   //set the motor speed and direction
   int dir = 1;
