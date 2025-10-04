@@ -11,7 +11,8 @@
 long prevT=0;// thời gian trước đó
 int posPrev=0;// vị trí trước đó
 volatile int pos_i=0;//vị tri hiện tại (volatile vì được thay đổi trong ngắt)
-
+volatile float velocity_i=0;
+volatile long prevT_i=0;
 
 void setup() {
   Serial.begin(9600);
@@ -31,8 +32,10 @@ void loop() {
   //read the position in an atomic block
   //to avoid potential misreads
   int pos=0;
+  float velocity2=0;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     pos=pos_i;
+    velocity2=velocity_i;
   }
   //compute velocity with method 1
   long currT=micros();// thời gian hiện tại
@@ -42,6 +45,8 @@ void loop() {
   posPrev=pos;
 
   Serial.print(velocity1);
+  Serial.print(" ");
+  Serial.print(velocity2);
   Serial.println();
 }
 
@@ -68,4 +73,11 @@ void readEncoder(){
     increment = -1;// nghịch
   }
   pos_i += increment;// cập nhật vị trí
+
+  //compute velocity with method 2
+  long currT=micros();// thời gian hiện tại
+  float deltaT=((float)(currT-prevT_i))/1.0e6;//thời gian giữa 2 lần đọc
+  velocity_i = increment/deltaT;// vận tốc = (vị trí hiện tại - vị trí trước đó)/ deltaT
+  prevT_i=currT;
 }
+
