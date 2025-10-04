@@ -11,8 +11,13 @@
 long prevT=0;// thời gian trước đó
 int posPrev=0;// vị trí trước đó
 volatile int pos_i=0;//vị tri hiện tại (volatile vì được thay đổi trong ngắt)
-volatile float velocity_i=0;
-volatile long prevT_i=0;
+volatile float velocity_i=0;//Vận tốc tính theo phương pháp 2
+volatile long prevT_i=0;// Thời gian trước đó cho phương pháp 2
+
+float v1Filt=0;//vận tốc lọc phương pháp 1
+float v1Prev=0;
+float v2Filt=0;//vận tốc lọc phương pháp 2
+float v2Prev=0;
 
 void setup() {
   Serial.begin(9600);
@@ -43,11 +48,22 @@ void loop() {
   float velocity1 = (pos-posPrev)/deltaT;// vận tốc = (vị trí hiện tại - vị trí trước đó)/ deltaT
   prevT=currT;
   posPrev=pos;
+  //conver count/s to RPM
 
-  Serial.print(velocity1);
+  float v1=velocity1*60.0/330.0;
+  float v2=velocity2*60.0/330.0;
+
+  //Low pass filter(25HZ cutoff)
+  v1Filt=0.854*v1Filt+0.0728*v1+0.0728*v1Prev;
+  v1Prev=v1;
+  v2Filt=0.854*v2Filt+0.0728*v2+0.0728*v2Prev;
+  v2Prev=v2;
+
+  Serial.print(v1);
   Serial.print(" ");
-  Serial.print(velocity2);
+  Serial.print(v1Filt);
   Serial.println();
+  delay(1);
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
