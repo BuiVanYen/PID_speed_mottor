@@ -30,10 +30,7 @@ void setup() {
 }
 
 void loop() {
-  int pwr=100/3.0*micros()/1.0e6;// tăng dần tốc độ theo thời gian 
-  int dir=1;// chiều quay thuận
-  setMotor(dir, pwr, PWM, IN1, IN2);
-
+  
   //read the position in an atomic block
   //to avoid potential misreads
   int pos=0;
@@ -58,6 +55,25 @@ void loop() {
   v1Prev=v1;
   v2Filt=0.854*v2Filt+0.0728*v2+0.0728*v2Prev;
   v2Prev=v2;
+
+  //set a target speed
+  float vt=100*(sin(currT/1e6)>0);
+  //compute the control signal u
+  float kp=1;
+  float e=vt-v1Filt;
+  float u=kp*e;
+
+  //set the motor speed and direction
+  int dir = 1;
+  if (u<0){
+    dir=-1;
+  }
+  int pwr = (int) fabs(u);
+  if (pwr>255){
+    pwr=255;
+  }
+  setMotor(dir,pwr,PWM,IN1,IN2);
+
 
   Serial.print(v1);
   Serial.print(" ");
